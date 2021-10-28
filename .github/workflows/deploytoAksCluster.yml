@@ -3,7 +3,7 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     env: 
-      VERSION: {GITHUB_REF/refs\/tags\//}
+      VERSION: ${GITHUB_REF/refs\/tags\//}
   
     steps:
     - uses: actions/checkout@master
