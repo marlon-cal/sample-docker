@@ -10,12 +10,15 @@ jobs:
         login-server: exquitechprivatereg.azurecr.io
         username: ${{ secrets.acr_exquitechprivatereg_username }}
         password: ${{ secrets.acr_exquitechprivatereg_password }}
+    - name: Get the version
+      id: get_version
+      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
     
     - name: Build and push image to ACR
       id: build-image    
       run: |
-        docker build "$GITHUB_WORKSPACE/" -f  "Dockerfile" -t exquitechprivatereg.azurecr.io/kubernetescluster:${{ github.ref }} --label dockerfile-path=Dockerfile
-        docker push exquitechprivatereg.azurecr.io/kubernetescluster:${{ github.ref }}
+        docker build "$GITHUB_WORKSPACE/" -f  "Dockerfile" -t exquitechprivatereg.azurecr.io/kubernetescluster:${{ VERSION }} --label dockerfile-path=Dockerfile
+        docker push exquitechprivatereg.azurecr.io/kubernetescluster:${{ VERSION }}
     
     - uses: azure/k8s-set-context@v1
       with:
@@ -46,6 +49,6 @@ jobs:
           manifests/service.yml
           manifests/ingress.yml
         images: |
-          exquitechprivatereg.azurecr.io/kubernetescluster:${{ github.ref }}
+          exquitechprivatereg.azurecr.io/kubernetescluster:${{ VERSION }}
         imagepullsecrets: |
           kubernetescldockerauth
