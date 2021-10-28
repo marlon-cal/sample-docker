@@ -17,8 +17,8 @@ jobs:
     - name: Build and push image to ACR
       id: build-image    
       run: |
-        docker build "$GITHUB_WORKSPACE/" -f  "Dockerfile" -t exquitechprivatereg.azurecr.io/kubernetescluster:${{ VERSION }} --label dockerfile-path=Dockerfile
-        docker push exquitechprivatereg.azurecr.io/kubernetescluster:${{ VERSION }}
+        docker build "$GITHUB_WORKSPACE/" -f  "Dockerfile" -t exquitechprivatereg.azurecr.io/kubernetescluster:$VERSION --label dockerfile-path=Dockerfile
+        docker push exquitechprivatereg.azurecr.io/kubernetescluster:$VERSION
     
     - uses: azure/k8s-set-context@v1
       with:
@@ -49,6 +49,6 @@ jobs:
           manifests/service.yml
           manifests/ingress.yml
         images: |
-          exquitechprivatereg.azurecr.io/kubernetescluster:${{ VERSION }}
+          exquitechprivatereg.azurecr.io/kubernetescluster:$VERSION
         imagepullsecrets: |
           kubernetescldockerauth
