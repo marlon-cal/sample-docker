@@ -1,0 +1,58 @@
+on: [workflow_dispatch]
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@master
+    - name: Set env
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+      - name: Test
+        run: |
+          echo $RELEASE_VERSION
+          echo ${{ env.RELEASE_VERSION }}
+    
+    - uses: azure/docker-login@v1
+      with:
+        login-server: exquitechprivatereg.azurecr.io
+        username: ${{ secrets.acr_exquitechprivatereg_username }}
+        password: ${{ secrets.acr_exquitechprivatereg_password }}
+
+    - name: Build and push image to ACR
+      id: build-image    
+      run: |
+        docker build "$GITHUB_WORKSPACE/" -f  "Dockerfile" -t exquitechprivatereg.azurecr.io/kubernetescluster:${{ github.sha }} --label dockerfile-path=Dockerfile
+        docker push exquitechprivatereg.azurecr.io/kubernetescluster:${{ github.sha }}
+    
+    - uses: azure/k8s-set-context@v1
+      with:
+         kubeconfig: ${{ secrets.aks_kubernetescluster_kubeConfig }}
+      id: login
+    
+    - name: Create namespace
+      run: |
+        namespacePresent=`kubectl get namespace | grep kubernetes-cluster801f | wc -l`
+        if [ $namespacePresent -eq 0 ]
+        then
+            echo `kubectl create namespace kubernetes-cluster801f`
+        fi
+
+    - uses: azure/k8s-create-secret@v1
+      with:
+        namespace: kubernetes-cluster801f
+        container-registry-url: exquitechprivatereg.azurecr.io
+        container-registry-username: ${{ secrets.acr_exquitechprivatereg_username }}
+        container-registry-password: ${{ secrets.acr_exquitechprivatereg_password }}
+        secret-name: kubernetescldockerauth
+       
+    - uses: azure/k8s-deploy@v1.2
+      with:
+        namespace: kubernetes-cluster801f
+        manifests: |
+          manifests/deployment.yml
+          manifests/service.yml
+          manifests/ingress.yml
+        images: |
+          exquitechprivatereg.azurecr.io/kubernetescluster:${{ github.sha }}
+        imagepullsecrets: |
+          kubernetescldockerauth

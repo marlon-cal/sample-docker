@@ -1,0 +1,19 @@
+apiVersion : apps/v1
+kind: Deployment
+metadata:
+  name: "kubernetescluster-d45b"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: "kubernetescluster-d45b"
+  template:
+    metadata:
+      labels:
+        app: "kubernetescluster-d45b"
+    spec:
+      containers:
+        - name: "kubernetescluster-d45b"
+          image: "exquitechprivatereg.azurecr.io/kubernetescluster"
+          ports:
+          - containerPort: 80
