@@ -1,4 +1,14 @@
-on: [push]
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Person to greet'
+        required: true
+        default: 'Mona the Octocat'
+      home:
+        description: 'location'
+        required: false
+        default: 'The Octoverse'
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -12,12 +22,10 @@ jobs:
         password: ${{ secrets.acr_exquitechprivatereg_password }}
     
     - name: Build and push image to ACR
-      id: build-image
-      env:
-        SOURCE_TAG: ${{ steps.branch_name.outputs.SOURCE_TAG }}      
+      id: build-image    
       run: |
-        docker build "$GITHUB_WORKSPACE/" -f  "Dockerfile" -t exquitechprivatereg.azurecr.io/kubernetescluster:${{ SOURCE_TAG }} --label dockerfile-path=Dockerfile
-        docker push exquitechprivatereg.azurecr.io/kubernetescluster:${{ SOURCE_TAG }}
+        docker build "$GITHUB_WORKSPACE/" -f  "Dockerfile" -t exquitechprivatereg.azurecr.io/kubernetescluster:${{ GITHUB_REF }} --label dockerfile-path=Dockerfile
+        docker push exquitechprivatereg.azurecr.io/kubernetescluster:${{ GITHUB_REF }}
     
     - uses: azure/k8s-set-context@v1
       with:
@@ -48,6 +56,6 @@ jobs:
           manifests/service.yml
           manifests/ingress.yml
         images: |
-          exquitechprivatereg.azurecr.io/kubernetescluster:${{ SOURCE_TAG }}
+          exquitechprivatereg.azurecr.io/kubernetescluster:${{ GITHUB_REF }}
         imagepullsecrets: |
           kubernetescldockerauth
