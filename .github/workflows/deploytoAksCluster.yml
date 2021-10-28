@@ -12,7 +12,7 @@ jobs:
         password: ${{ secrets.acr_exquitechprivatereg_password }}
     - name: Get the version
       id: get_version
-      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      env: VERSION=${GITHUB_REF/refs\/tags\//}
     
     - name: Build and push image to ACR
       id: build-image    
