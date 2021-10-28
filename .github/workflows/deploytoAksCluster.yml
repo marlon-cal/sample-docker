@@ -2,9 +2,7 @@ on: [workflow_dispatch]
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    env: 
-      VERSION: ${GITHUB_REF/refs\/tags\//}
-  
+
     steps:
     - uses: actions/checkout@master
     
@@ -13,12 +11,15 @@ jobs:
         login-server: exquitechprivatereg.azurecr.io
         username: ${{ secrets.acr_exquitechprivatereg_username }}
         password: ${{ secrets.acr_exquitechprivatereg_password }}
+    - name: Get the version
+      id: get_version
+      run:  echo ::set-output name=SOURCE_TAG::${GITHUB_REF#refs/tags/}
 
     - name: Build and push image to ACR
       id: build-image    
       run: |
-        docker build "$GITHUB_WORKSPACE/" -f  "Dockerfile" -t exquitechprivatereg.azurecr.io/kubernetescluster:$VERSION --label dockerfile-path=Dockerfile
-        docker push exquitechprivatereg.azurecr.io/kubernetescluster:$VERSION
+        docker build "$GITHUB_WORKSPACE/" -f  "Dockerfile" -t exquitechprivatereg.azurecr.io/kubernetescluster:$SOURCE_TAG --label dockerfile-path=Dockerfile
+        docker push exquitechprivatereg.azurecr.io/kubernetescluster:$SOURCE_TAG
     
     - uses: azure/k8s-set-context@v1
       with:
@@ -49,6 +50,6 @@ jobs:
           manifests/service.yml
           manifests/ingress.yml
         images: |
-          exquitechprivatereg.azurecr.io/kubernetescluster:$VERSION
+          exquitechprivatereg.azurecr.io/kubernetescluster:$SOURCE_TAG
         imagepullsecrets: |
           kubernetescldockerauth
