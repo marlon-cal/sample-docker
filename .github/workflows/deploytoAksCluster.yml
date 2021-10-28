@@ -2,6 +2,9 @@ on: [workflow_dispatch]
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    env: 
+      VERSION: {GITHUB_REF/refs\/tags\//}
+  
     steps:
     - uses: actions/checkout@master
     
@@ -10,10 +13,7 @@ jobs:
         login-server: exquitechprivatereg.azurecr.io
         username: ${{ secrets.acr_exquitechprivatereg_username }}
         password: ${{ secrets.acr_exquitechprivatereg_password }}
-    - name: Get the version
-      id: get_version
-      env: VERSION=${GITHUB_REF/refs\/tags\//}
-    
+
     - name: Build and push image to ACR
       id: build-image    
       run: |
