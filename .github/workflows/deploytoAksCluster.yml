@@ -2,14 +2,12 @@ on: [workflow_dispatch]
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-
-
     steps:
     - uses: actions/checkout@master
     - name: Set env
-        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-      - name: tagname
-        run: |
+      run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+    - name: tagname
+      run: |
           echo $RELEASE_VERSION
           echo ${{ env.RELEASE_VERSION }}
     
